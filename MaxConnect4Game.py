@@ -5,8 +5,13 @@
 from copy import copy
 import random
 import sys
-from minimax import *
+import copy
+import numpy as np
 
+infinity = float('inf')
+child_node_present = True
+utility_list = {}
+score_list = []
 class maxConnect4Game:
     def __init__(self):
         self.gameBoard = [[0 for i in range(7)] for j in range(6)]
@@ -39,7 +44,7 @@ class maxConnect4Game:
 
     # Place the current player's piece in the requested column
     def playPiece(self, column):
-        print column
+        #print column
         if not self.gameBoard[0][column]:
             for i in range(5, -1, -1):
                 if not self.gameBoard[i][column]:
@@ -47,14 +52,101 @@ class maxConnect4Game:
                     self.pieceCount += 1
                     return 1
 
-    # The AI section. Currently plays randomly.
+    def checkPiece(self, column,opponent):
+        # print column
+        if not self.gameBoard[0][column]:
+            for i in range(5, -1, -1):
+                if not self.gameBoard[i][column]:
+                    self.gameBoard[i][column] = opponent
+                    self.pieceCount += 1
+                    return 1
+
+    # The minimax algorithm.
+    def minimax(self,current_node):
+        current_state = copy.deepcopy(current_node)
+        for i in range(0,6,1):
+            if self.playPiece(i) != None:
+                #print self.gameBoard
+                if self.pieceCount == 42:
+                    self.gameBoard = copy.deepcopy(current_state)
+                    return i
+                    #return np.argmax(score_list)
+                else:
+                    #print self.gameBoard
+                    print "first tree"
+                    print self.gameBoard
+                    score_list.append(self.min_value(self.gameBoard))
+                    self.gameBoard = copy.deepcopy(current_state)
+        for s in score_list:
+            print s
+            #print self.gameBoard
+        #return np.argmax(score_list)
+
+    def max_value(self,current_node):
+        parent_node = copy.deepcopy(current_node)
+        v = -infinity
+        track_of_child_nodes = []
+        for j in range(0,6,1):
+            current_state = self.playPiece(j)
+            if current_state != None:
+                #print j
+                track_of_child_nodes.append(self.gameBoard)
+                self.gameBoard = copy.copy(parent_node)
+
+        if track_of_child_nodes == []:
+            return self.player1Score - self.player2Score
+        else:
+            max_score_list = []
+            for child in track_of_child_nodes:
+                # print self.pieceCount
+                print "This is for Max Player"
+                print child
+                self.gameBoard = copy.deepcopy(child)
+                v = max(v, self.min_value(child))
+                #print "Value of v from max"
+                #print v
+                #max_score_list.append(v)
+            return v
+
+    def min_value(self,current_node):
+        parent_node = copy.deepcopy(current_node)
+        if self.currentTurn == 1:
+            opponent = 2
+        elif self.currentTurn == 2:
+            opponent =1
+        # if self.pieceCount == 42:
+        #     return self.player1Score
+
+        v = infinity
+        track_of_child_nodes = []
+        for j in range(0,6,1):
+            current_state = self.checkPiece(j,opponent)
+            if current_state != None:
+                track_of_child_nodes.append(self.gameBoard)
+                self.gameBoard = copy.copy(parent_node)
+
+        if track_of_child_nodes == []:
+            print "this is max score"
+            print self.player1Score
+            return self.player1Score - self.player2Score
+        else:
+            for child in track_of_child_nodes:
+                #print self.pieceCount
+                print "This is for opponent"
+                print child
+                self.gameBoard = copy.deepcopy(child)
+                v = min(v,self.max_value(child))
+                #print "this is the value of v which will be sent"
+                #print v
+            return v
+
     def aiPlay(self):
 
         #randColumn = random.randrange(0,7)
         #Will call the minimax algorithm here
         #-----------------------------------------
-        current_state_for_searching = miniMax()
-        randColumn = current_state_for_searching.minimax(self.gameBoard)
+        randColumn = self.minimax(self.gameBoard)
+        #randColumn = 2
         result = self.playPiece(randColumn)
         if not result:
             self.aiPlay()
