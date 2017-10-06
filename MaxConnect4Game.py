@@ -7,11 +7,14 @@ import random
 import sys
 import copy
 import numpy as np
+from datetime import time
+import time
 
 infinity = float('inf')
 child_node_present = True
 utility_list = {}
 score_list = []
+score_list_from_alpha_beta = []
 class maxConnect4Game:
     def __init__(self):
         self.gameBoard = [[0 for i in range(7)] for j in range(6)]
@@ -59,10 +62,8 @@ class maxConnect4Game:
                 if state[i][j] == color:
                     # check if a vertical streak starts at (i, j)
                     count += self.verticalStreak(i, j, state, streak)
-
                     # check if a horizontal four-in-a-row starts at (i, j)
                     count += self.horizontalStreak(i, j, state, streak)
-
                     # check if a diagonal (either way) four-in-a-row starts at (i, j)
                     count += self.diagonalCheck(i, j, state, streak)
         # return the sum of streaks of length 'streak'
@@ -178,13 +179,14 @@ class maxConnect4Game:
                     return i
                     #return np.argmax(score_list)
                 else:
+                    #print "this is the child"
+                    #print i
                     #print self.gameBoard
                     #print "first tree"
                     #print self.gameBoard
-                    score_list.append(self.min_value(self.gameBoard))
+                    utility_list[i] = (self.min_value(self.gameBoard))
                     self.gameBoard = copy.deepcopy(current_state)
-        for s in score_list:
-            print s
+        return max(utility_list, key=utility_list.get)
             #print self.gameBoard
         #return np.argmax(score_list)
 
@@ -197,14 +199,14 @@ class maxConnect4Game:
             if current_state != None:
                 #print j
                 track_of_child_nodes.append(self.gameBoard)
-                self.gameBoard = copy.copy(parent_node)
+                self.gameBoard = copy.deepcopy(parent_node)
 
         if track_of_child_nodes == []:
             #print "This is the score for maximum"
             #print self.player1Score
-            score = self.eval_function(self,self.gameBoard)
-            self.countScore1(self.dashBoard)
-            return self.player1Score
+            #score = self.eval_function(self,self.gameBoard)
+            self.countScore1(self.gameBoard)
+            return self.player1Score - self.player2Score
         else:
             max_score_list = []
             for child in track_of_child_nodes:
@@ -233,12 +235,12 @@ class maxConnect4Game:
             current_state = self.checkPiece(j,opponent)
             if current_state != None:
                 track_of_child_nodes.append(self.gameBoard)
-                self.gameBoard = copy.copy(parent_node)
+                self.gameBoard = copy.deepcopy(parent_node)
 
         if track_of_child_nodes == []:
             #print "this is the final score for minimum"
             self.countScore1(self.gameBoard)
-            return self.player1Score
+            return self.player1Score - self.player2Score
         else:
             for child in track_of_child_nodes:
                 #print self.pieceCount
@@ -255,8 +257,14 @@ class maxConnect4Game:
         #randColumn = random.randrange(0,7)
         #Will call the minimax algorithm here
         #-----------------------------------------
-        randColumn = self.minimax(self.gameBoard)
-        #randColumn = 2
+        start = time.time()
+        #randColumn = self.minimax(self.gameBoard)
+        randColumn = self.alpha_beta_decision(self.gameBoard)
+        #randColumn = self.depth_limited_alpha_beta_pruning(self.gameBoard)
+        print "Time taken to decide after alpha beta is "
+        print time.time() - start
+        #print randColumn1
+        #randColumn = 1
         result = self.playPiece(randColumn)
         if not result:
             self.aiPlay()
@@ -666,4 +674,205 @@ class maxConnect4Game:
         if (self.gameBoard[2][6] == 2 and self.gameBoard[3][5] == 2 and
                self.gameBoard[4][4] == 2 and self.gameBoard[5][3] == 2):
             self.player2Score += 1
+
+
+    #normal minimax with change in methods :tentative
+
+    def alpha_beta_decision(self, current_node):
+        current_state = copy.deepcopy(current_node)
+        for i in range(0, 6, 1):
+            if self.playPiece(i) != None:
+                # print self.gameBoard
+                if self.pieceCount == 42:
+                    self.gameBoard = copy.deepcopy(current_state)
+                    return i
+                    # return np.argmax(score_list)
+                else:
+                    # print "this is the child"
+                    # print i
+                    # print self.gameBoard
+                    # print "first tree"
+                    # print self.gameBoard
+                    v = self.minValue(self.gameBoard,-infinity,infinity)
+                    utility_list[i] = v
+                    self.gameBoard = copy.deepcopy(current_state)
+        return max(utility_list, key=utility_list.get)
+        # print self.gameBoard
+        # return np.argmax(score_list)
+
+    def maxValue(self, current_node,alpha,beta):
+        parent_node = copy.deepcopy(current_node)
+        v = -infinity
+        track_of_child_nodes = []
+        for j in range(0, 6, 1):
+            current_state = self.playPiece(j)
+            if current_state != None:
+                # print j
+                track_of_child_nodes.append(self.gameBoard)
+                self.gameBoard = copy.deepcopy(parent_node)
+
+        if track_of_child_nodes == []:
+            # print "This is the score for maximum"
+            # print self.player1Score
+            # score = self.eval_function(self,self.gameBoard)
+            self.countScore1(self.gameBoard)
+            return self.player1Score - self.player2Score
+        else:
+            max_score_list = []
+            for child in track_of_child_nodes:
+                # print self.pieceCount
+                # print "This is for Max Player"
+                # print child
+                self.gameBoard = copy.deepcopy(child)
+                v = max(v, self.minValue(child,alpha,beta))
+                if v >= beta:
+                    return v
+                alpha = max(alpha,v)
+                # print "Value of v from max"
+                # print v
+                # max_score_list.append(v)
+            return v
+
+    def minValue(self, current_node,alpha,beta):
+        parent_node = copy.deepcopy(current_node)
+        if self.currentTurn == 1:
+            opponent = 2
+        elif self.currentTurn == 2:
+            opponent = 1
+        # if self.pieceCount == 42:
+        #     return self.player1Score
+
+        v = infinity
+        track_of_child_nodes = []
+        for j in range(0, 6, 1):
+            current_state = self.checkPiece(j, opponent)
+            if current_state != None:
+                track_of_child_nodes.append(self.gameBoard)
+                self.gameBoard = copy.deepcopy(parent_node)
+
+        if track_of_child_nodes == []:
+            # print "this is the final score for minimum"
+            self.countScore1(self.gameBoard)
+            return self.player1Score - self.player2Score
+        else:
+            for child in track_of_child_nodes:
+                # print self.pieceCount
+                # print "This is for opponent"
+                # print child
+                self.gameBoard = copy.deepcopy(child)
+                v = min(v, self.maxValue(child,alpha,beta))
+                if v <= alpha:
+                    return v
+                # print "this is the value of v which will be sent"
+                beta = min(beta,v)
+                # print v
+            return v
+
+
+
+
+
+
+
+
+
+
+    # Code not working properly,lets take the normal minimax and try
+    # def alpha_beta_decision(self,state):
+    #     current_state = copy.deepcopy(state)
+    #     for i in range(0, 6, 1):
+    #         if self.playPiece(i) != None:
+    #             # print self.gameBoard
+    #             if self.pieceCount == 42:
+    #                 self.gameBoard = copy.deepcopy(current_state)
+    #                 return i
+    #                 # return np.argmax(score_list)
+    #             else:
+    #                 score_list_from_alpha_beta.append(self.maxValue(self.gameBoard,-infinity,infinity))
+    #                 self.gameBoard = copy.deepcopy(current_state)
+    #     for s in score_list_from_alpha_beta:
+    #         print s
+    #                 # print self.gameBoard
+    #                 # return np.argmax(score_list)
+    #                 # value,c = self.MaxValue(state,-infinity,infinity,1,depth1)
+    #                 # return value,c
+    #
+    # def maxValue(self,state,alpha,beta):
+    #     parent_node = copy.deepcopy(state)
+    #     v = -infinity
+    #     track_of_child_nodes = []
+    #     for j in range(0, 6, 1):
+    #         current_state = self.playPiece(j)
+    #         if current_state != None:
+    #             print j
+    #             track_of_child_nodes.append(self.gameBoard)
+    #             self.gameBoard = copy.deepcopy(parent_node)
+    #
+    #     if track_of_child_nodes == []:
+    #         # print "This is the score for maximum"
+    #         # print self.player1Score
+    #         #score = self.eval_function(self, self.gameBoard)
+    #         self.countScore1(self.gameBoard)
+    #         return self.player1Score - self.player2Score
+    #     # elif depth == depth1:
+    #     #     return self.player1Score - self.player2Score
+    #     else:
+    #         #max_score_list = []
+    #         for child in track_of_child_nodes:
+    #             self.gameBoard = copy.deepcopy(child)
+    #             v = max(v, self.minValue(child,alpha,beta))
+    #             # print "This is the value of v"
+    #             # print v
+    #             # print "this is the value for alpha"
+    #             # print alpha
+    #             if v >= beta:
+    #                 return v
+    #             alpha = max(alpha,v)
+    #             # print "Value of v from max"
+    #             # print v
+    #             # max_score_list.append(v)
+    #         return v
+    #
+    # def minValue(self,state,alpha,beta):
+    #     if self.currentTurn == 1:
+    #         opponent = 2
+    #     elif self.currentTurn == 2:
+    #         opponent = 1
+    #     parent_node = copy.deepcopy(state)
+    #     v = infinity
+    #     track_of_child_nodes = []
+    #     for j in range(0, 6, 1):
+    #         current_state = self.checkPiece(j,opponent)
+    #         if current_state != None:
+    #             # print j
+    #             track_of_child_nodes.append(self.gameBoard)
+    #             self.gameBoard = copy.deepcopy(parent_node)
+    #
+    #     if track_of_child_nodes == []:
+    #         # print "This is the score for maximum"
+    #         # print self.player1Score
+    #         print self.gameBoard
+    #         #score = self.eval_function(self, self.gameBoard)
+    #         self.countScore1(self.gameBoard)
+    #         return self.player1Score - self.player2Score
+    #     # elif depth == depth1:
+    #     #     return self.player1Score - self.player2Score
+    #     else:
+    #         #max_score_list = []
+    #         for child in track_of_child_nodes:
+    #             self.gameBoard = copy.deepcopy(child)
+    #             v = min(v, self.maxValue(child,alpha,beta))
+    #             if v <= alpha:
+    #                 return v
+    #             beta = min(beta,v)
+    #             # print "Value of v from max"
+    #             # print v
+    #             # max_score_list.append(v)
+    #         return v
+
+
+
+
+
+
 
