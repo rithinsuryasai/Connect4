@@ -7,8 +7,10 @@
 import sys
 import os
 from MaxConnect4Game import *
+import time
 
 def oneMoveGame(currentGame,depth):
+    start = time.time()
     if currentGame.pieceCount == 42:    # Is the board full already?
         print 'BOARD FULL\n\nGame Over!\n'
         sys.exit(0)
@@ -23,13 +25,15 @@ def oneMoveGame(currentGame,depth):
 
     currentGame.printGameBoardToFile()
     currentGame.gameFile.close()
+    print "Time take for the computers decision is"
+    print time.time() - start
 
 
 def interactiveGame(currentGame,next_chance,depth,inFile):
 
     if next_chance == "human-next":
         print "Its humans turn now"
-        while not currentGame.pieceCount == 42:
+        while currentGame.pieceCount != 42:
             userMove = input("Enter the column number [1-7] where you would like to play : ")
             if not 0 < userMove < 8:
                 print "Invalid column number!"
@@ -39,7 +43,7 @@ def interactiveGame(currentGame,next_chance,depth,inFile):
                 continue
 
             if os.path.exists("input.txt"):
-                currentGame.gameFile = open(inFile, 'r')
+                print "Do not reset the game"
             else:
                 game_state = "0000000\n0000000\n0000000\n0000000\n0000000\n0000000\n1"
                 text_file = open("input.txt", "w")
@@ -54,19 +58,23 @@ def interactiveGame(currentGame,next_chance,depth,inFile):
                 currentGame.gameFile.close()
                 print "Computer will think "+str(depth)+" steps ahead and make a move"
                 if currentGame.currentTurn == 1:
-                    opponent = 2
+                    currentGame.currentTurn = 2
                 elif currentGame.currentTurn == 2:
-                    opponent = 1
+                    currentGame.currentTurn = 1
                 currentGame.aiPlay(int(depth))
                 currentGame.gameFile = open("computer.txt", 'w')
                 # currentGame.playPiece(userMove)
                 # currentGame.gameFile.write(currentGame.gameBoard)
                 print "Computer has made a move at column " + str(currentGame.computer_column)
                 currentGame.printGameBoardToFile()
+                currentGame.printGameBoard()
+                currentGame.countScore()
+                print('Score: Player 1 = %d, Player 2 = %d\n' % (currentGame.player1Score, currentGame.player2Score))
+                #print currentGame.checkPieceCount()
+                #print currentGame.gameBoard()
                 currentGame.gameFile.close()
-                print currentGame.gameBoard()
-            except Exception as e:
-                sys.exit(str(e))
+            except Exception,e:
+                print e
 
     elif next_chance == "computer-next":
         currentGame.aiPlay(int(depth))
@@ -77,6 +85,8 @@ def interactiveGame(currentGame,next_chance,depth,inFile):
         currentGame.printGameBoardToFile()
         currentGame.gameFile.close()
         currentGame.printGameBoard()
+        currentGame.countScore()
+        print('Score: Player 1 = %d, Player 2 = %d\n' % (currentGame.player1Score, currentGame.player2Score))
         interactiveGame(currentGame,"human-next",depth,inFile)
 
     if currentGame.pieceCount == 42:    # Is the board full already?

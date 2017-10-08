@@ -6,7 +6,7 @@ from copy import copy
 import random
 import sys
 import copy
-import numpy as np
+#import numpy as np
 from datetime import time
 import time
 
@@ -187,7 +187,12 @@ class maxConnect4Game:
                     #print self.gameBoard
                     utility_list[i] = (self.min_value(self.gameBoard))
                     self.gameBoard = copy.deepcopy(current_state)
-        return max(utility_list, key=utility_list.get)
+        #return max(utility_list, key=utility_list.get)
+        max_util_value =  max([i for i in utility_list.values()])
+        for i in range(0,6,1):
+            if i in utility_list:
+        	    if utility_list[i] == max_util_value:
+        		    return i
             #print self.gameBoard
         #return np.argmax(score_list)
 
@@ -261,9 +266,9 @@ class maxConnect4Game:
         start = time.time()
         #randColumn = self.minimax(self.gameBoard)
         randColumn = self.alpha_beta_decision(self.gameBoard)
-        #randColumn = self.depth_limited_alpha_beta_pruning(self.gameBoard,7)
-        print "Time taken to decide after alpha beta is "
-        print time.time() - start
+        #randColumn = self.depth_limited_alpha_beta_pruning(self.gameBoard,depth)
+        #print "Time taken to decide after alpha beta is "
+        #print time.time() - start
         #print randColumn1
         #randColumn = 1
         self.computer_column = randColumn
@@ -698,7 +703,12 @@ class maxConnect4Game:
                     v = self.minValue(self.gameBoard,-infinity,infinity)
                     utility_list[i] = v
                     self.gameBoard = copy.deepcopy(current_state)
-        return max(utility_list, key=utility_list.get)
+        #return max(utility_list, key=utility_list.get)
+        max_util_value =  max([i for i in utility_list.values()])
+        for i in range(0,6,1):
+            if i in utility_list:
+        	    if utility_list[i] == max_util_value:
+        		    return i
         # print self.gameBoard
         # return np.argmax(score_list)
 
@@ -789,7 +799,15 @@ class maxConnect4Game:
                     utility_list[i] = v
                     self.gameBoard = copy.deepcopy(current_state)
         print utility_list
-        return max(utility_list, key=utility_list.get)
+        #return max(utility_list, key=utility_list.get)
+        max_util_value =  max([i for i in utility_list.values()])
+        #print max_util_value
+        for i in range(0,6,1):
+            if i in utility_list:
+        	    if utility_list[i] == max_util_value:
+        		    return i
+
+        #return max([i for i in utility_list.values()]) 
         # print self.gameBoard
                 # return np.argmax(score_list)
 
