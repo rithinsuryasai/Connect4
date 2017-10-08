@@ -268,8 +268,8 @@ class maxConnect4Game:
         #-----------------------------------------
         start = time.time()
         #randColumn = self.minimax(self.gameBoard)
-        randColumn = self.alpha_beta_decision(self.gameBoard)
-        #randColumn = self.depth_limited_alpha_beta_pruning(self.gameBoard,depth)
+        # randColumn = self.alpha_beta_decision(self.gameBoard)
+        randColumn = self.depth_limited_alpha_beta_pruning(self.gameBoard,depth)
         #print "Time taken to decide after alpha beta is "
         #print time.time() - start
         #print randColumn1
@@ -277,7 +277,7 @@ class maxConnect4Game:
         self.computer_column = randColumn
         result = self.playPiece(randColumn)
         if not result:
-            self.aiPlay()
+            print "No Result"
         else:
             #print('\n\nmove %d: Player %d, column %d\n' % (self.pieceCount, self.currentTurn, randColumn+1))
             if self.currentTurn == 1:

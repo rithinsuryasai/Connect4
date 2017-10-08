@@ -56,6 +56,7 @@ def interactiveGame(currentGame,next_chance,depth,inFile):
                 #currentGame.gameFile.write(currentGame.gameBoard)
                 print "You have made a move at column "+str(userMove)
                 currentGame.printGameBoardToFile()
+                currentGame.printGameBoard()
                 currentGame.gameFile.close()
                 if(currentGame.checkPieceCountForInteractive() == 42):
                     print "Game Over"
@@ -155,6 +156,12 @@ def main(argv):
     print('Score: Player 1 = %d, Player 2 = %d\n' % (currentGame.player1Score, currentGame.player2Score))
 
     if game_mode == 'interactive':
+        if currentGame.currentTurn == 1:
+            print "You are playing as : "+str(currentGame.currentTurn)
+            print "COMPUTER as : "+str(2)
+        elif currentGame.currentTurn == 2:
+            print "You are playing as : "+str(currentGame.currentTurn)
+            print "COMPUTER as : "+str(1)
         interactiveGame(currentGame,next_chance,depth,inFile) # Be sure to pass whatever else you need from the command line
     else: # game_mode == 'one-move'
         # Set up the output file
