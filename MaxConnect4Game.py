@@ -134,6 +134,9 @@ class maxConnect4Game:
     def checkPieceCount(self):
         self.pieceCount = sum(1 for row in self.gameBoard for piece in row if piece)
 
+    def checkPieceCountForInteractive(self):
+        return sum(1 for row in self.gameBoard for piece in row if piece)
+
     # Output current game status to console
     def printGameBoard(self):
         print ' -----------------'
@@ -695,8 +698,8 @@ class maxConnect4Game:
                     return i
                     # return np.argmax(score_list)
                 else:
-                    # print "this is the child"
-                    # print i
+                    #print "this is the child"
+                    #print i
                     # print self.gameBoard
                     # print "first tree"
                     # print self.gameBoard
@@ -705,6 +708,7 @@ class maxConnect4Game:
                     self.gameBoard = copy.deepcopy(current_state)
         #return max(utility_list, key=utility_list.get)
         max_util_value =  max([i for i in utility_list.values()])
+        #print utility_list
         for i in range(0,6,1):
             if i in utility_list:
         	    if utility_list[i] == max_util_value:

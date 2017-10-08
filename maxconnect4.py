@@ -32,8 +32,9 @@ def oneMoveGame(currentGame,depth):
 def interactiveGame(currentGame,next_chance,depth,inFile):
 
     if next_chance == "human-next":
-        print "Its humans turn now"
-        while currentGame.pieceCount != 42:
+
+        while currentGame.checkPieceCountForInteractive() != 42:
+            print "Its humans turn now"
             userMove = input("Enter the column number [1-7] where you would like to play : ")
             if not 0 < userMove < 8:
                 print "Invalid column number!"
@@ -43,7 +44,7 @@ def interactiveGame(currentGame,next_chance,depth,inFile):
                 continue
 
             if os.path.exists("input.txt"):
-                print "Do not reset the game"
+                currentGame.gameFile = open(inFile, 'r')
             else:
                 game_state = "0000000\n0000000\n0000000\n0000000\n0000000\n0000000\n1"
                 text_file = open("input.txt", "w")
@@ -56,23 +57,27 @@ def interactiveGame(currentGame,next_chance,depth,inFile):
                 print "You have made a move at column "+str(userMove)
                 currentGame.printGameBoardToFile()
                 currentGame.gameFile.close()
-                print "Computer will think "+str(depth)+" steps ahead and make a move"
-                if currentGame.currentTurn == 1:
-                    currentGame.currentTurn = 2
-                elif currentGame.currentTurn == 2:
-                    currentGame.currentTurn = 1
-                currentGame.aiPlay(int(depth))
-                currentGame.gameFile = open("computer.txt", 'w')
-                # currentGame.playPiece(userMove)
-                # currentGame.gameFile.write(currentGame.gameBoard)
-                print "Computer has made a move at column " + str(currentGame.computer_column)
-                currentGame.printGameBoardToFile()
-                currentGame.printGameBoard()
-                currentGame.countScore()
-                print('Score: Player 1 = %d, Player 2 = %d\n' % (currentGame.player1Score, currentGame.player2Score))
-                #print currentGame.checkPieceCount()
-                #print currentGame.gameBoard()
-                currentGame.gameFile.close()
+                if(currentGame.checkPieceCountForInteractive() == 42):
+                    print "Game Over"
+                    break
+                else:
+                    print "Computer will think "+str(depth)+" steps ahead and make a move"
+                    if currentGame.currentTurn == 1:
+                        currentGame.currentTurn = 2
+                    elif currentGame.currentTurn == 2:
+                        currentGame.currentTurn = 1
+                    currentGame.aiPlay(int(depth))
+                    currentGame.gameFile = open("computer.txt", 'w')
+                    # currentGame.playPiece(userMove)
+                    # currentGame.gameFile.write(currentGame.gameBoard)
+                    print "Computer has made a move at column " + str(currentGame.computer_column+1)
+                    currentGame.printGameBoardToFile()
+                    currentGame.printGameBoard()
+                    currentGame.countScore()
+                    print('Score: Player 1 = %d, Player 2 = %d\n' % (currentGame.player1Score, currentGame.player2Score))
+                    #print currentGame.checkPieceCount()
+                    #print currentGame.gameBoard()
+                    currentGame.gameFile.close()
             except Exception,e:
                 print e
 
@@ -81,7 +86,7 @@ def interactiveGame(currentGame,next_chance,depth,inFile):
         currentGame.gameFile = open("computer.txt", 'w')
         # currentGame.playPiece(userMove)
         # currentGame.gameFile.write(currentGame.gameBoard)
-        print "Computer has made a move at column " + str(currentGame.computer_column)
+        print "Computer has made a move at column " + str(currentGame.computer_column+1)
         currentGame.printGameBoardToFile()
         currentGame.gameFile.close()
         currentGame.printGameBoard()
@@ -89,20 +94,26 @@ def interactiveGame(currentGame,next_chance,depth,inFile):
         print('Score: Player 1 = %d, Player 2 = %d\n' % (currentGame.player1Score, currentGame.player2Score))
         interactiveGame(currentGame,"human-next",depth,inFile)
 
-    if currentGame.pieceCount == 42:    # Is the board full already?
+    if currentGame.checkPieceCountForInteractive() == 42:    # Is the board full already?
         print 'BOARD FULL\n\nGame Over!\n'
-        sys.exit(0)
+        #sys.exit(0)
 
-    currentGame.aiPlay() # Make a move (only random is implemented)
+    #currentGame.aiPlay() # Make a move (only random is implemented)
 
     print 'Game state after move:'
     currentGame.printGameBoard()
 
     currentGame.countScore()
     print('Score: Player 1 = %d, Player 2 = %d\n' % (currentGame.player1Score, currentGame.player2Score))
+    if currentGame.player1Score > currentGame.player2Score:
+        print "Player 1 WINS"
+    elif currentGame.player2Score > currentGame.player1Score:
+        print "Player 2 WINS"
+    elif currentGame.player1Score == currentGame.player2Score:
+        print "Its a TIE"
 
-    currentGame.printGameBoardToFile()
-    currentGame.gameFile.close()
+    #currentGame.printGameBoardToFile()
+    #currentGame.gameFile.close()
 
 
 def main(argv):
@@ -140,7 +151,6 @@ def main(argv):
     currentGame.printGameBoard()
 
     # Update a few game variables based on initial state and print the score
-    currentGame.checkPieceCount()
     currentGame.countScore()
     print('Score: Player 1 = %d, Player 2 = %d\n' % (currentGame.player1Score, currentGame.player2Score))
 
