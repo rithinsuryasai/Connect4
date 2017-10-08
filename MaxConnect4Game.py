@@ -23,6 +23,7 @@ class maxConnect4Game:
         self.player2Score = 0
         self.pieceCount = 0
         self.gameFile = None
+        self.computer_column = None
         random.seed()
 
     # Count the number of pieces already played
@@ -39,19 +40,19 @@ class maxConnect4Game:
             o_color = 1
 
         my_fours = self.checkForStreak(state,self.currentTurn, 4)
-        print my_fours
+        #print my_fours
         my_threes = self.checkForStreak(state, self.currentTurn, 3)
-        print my_threes
+        #print my_threes
         my_twos = self.checkForStreak(state,self.currentTurn, 2)
-        print my_twos
+        #print my_twos
         opp_fours = self.checkForStreak(state, o_color, 4)
-        print opp_fours
-        # opp_threes = self.checkForStreak(state, o_color, 3)
-        # opp_twos = self.checkForStreak(state, o_color, 2)
-        if opp_fours > 0:
-            return -100000
-        else:
-            return my_fours * 100000 + my_threes * 100 + my_twos
+        #print opp_fours
+        opp_threes = self.checkForStreak(state, o_color, 3)
+        opp_twos = self.checkForStreak(state, o_color, 2)
+        #if opp_fours > 0:
+            #return -100000
+        #else:
+        return (my_fours * 10 + my_threes * 5 + my_twos * 2)- (opp_fours *10 + opp_threes * 5 + opp_twos * 2)
 
     def checkForStreak(self, state, color, streak):
         count = 0
@@ -252,7 +253,7 @@ class maxConnect4Game:
                 #print v
             return v
 
-    def aiPlay(self):
+    def aiPlay(self,depth):
 
         #randColumn = random.randrange(0,7)
         #Will call the minimax algorithm here
@@ -260,16 +261,17 @@ class maxConnect4Game:
         start = time.time()
         #randColumn = self.minimax(self.gameBoard)
         randColumn = self.alpha_beta_decision(self.gameBoard)
-        #randColumn = self.depth_limited_alpha_beta_pruning(self.gameBoard)
+        #randColumn = self.depth_limited_alpha_beta_pruning(self.gameBoard,7)
         print "Time taken to decide after alpha beta is "
         print time.time() - start
         #print randColumn1
         #randColumn = 1
+        self.computer_column = randColumn
         result = self.playPiece(randColumn)
         if not result:
             self.aiPlay()
         else:
-            print('\n\nmove %d: Player %d, column %d\n' % (self.pieceCount, self.currentTurn, randColumn+1))
+            #print('\n\nmove %d: Player %d, column %d\n' % (self.pieceCount, self.currentTurn, randColumn+1))
             if self.currentTurn == 1:
                 self.currentTurn = 2
             elif self.currentTurn == 2:
@@ -767,10 +769,99 @@ class maxConnect4Game:
                 beta = min(beta,v)
                 # print v
             return v
+    #Depth limited Search
+    def depth_limited_alpha_beta_pruning(self, current_node,maxDepth):
+        current_state = copy.deepcopy(current_node)
+        for i in range(0, 6, 1):
+            if self.playPiece(i) != None:
+                # print self.gameBoard
+                if self.pieceCount == 42 or maxDepth == 0:
+                    self.gameBoard = copy.deepcopy(current_state)
+                    return i
+                    # return np.argmax(score_list)
+                else:
+                    # print "this is the child"
+                    # print i
+                    # print self.gameBoard
+                    # print "first tree"
+                    # print self.gameBoard
+                    v = self.depth_limited_minValue(self.gameBoard, -infinity, infinity,maxDepth-1)
+                    utility_list[i] = v
+                    self.gameBoard = copy.deepcopy(current_state)
+        print utility_list
+        return max(utility_list, key=utility_list.get)
+        # print self.gameBoard
+                # return np.argmax(score_list)
 
+    def depth_limited_minValue(self, current_node, alpha, beta,maxDepth):
+        parent_node = copy.deepcopy(current_node)
+        if self.currentTurn == 1:
+            opponent = 2
+        elif self.currentTurn == 2:
+            opponent = 1
+        # if self.pieceCount == 42:
+        #     return self.player1Score
 
+        v = infinity
+        track_of_child_nodes = []
+        for j in range(0, 6, 1):
+            current_state = self.checkPiece(j, opponent)
+            if current_state != None:
+                track_of_child_nodes.append(self.gameBoard)
+                self.gameBoard = copy.deepcopy(parent_node)
 
+        if track_of_child_nodes == [] or maxDepth == 0:
+            # print "this is the final score for minimum"
+            self.countScore1(self.gameBoard)
+            return self.eval_function(self.gameBoard)
+            #return self.player1Score - self.player2Score
+        else:
+            for child in track_of_child_nodes:
+                # print self.pieceCount
+                # print "This is for opponent"
+                # print child
+                self.gameBoard = copy.deepcopy(child)
+                v = min(v, self.depth_limited_maxValue(child, alpha, beta,maxDepth-1))
+                if v <= alpha:
+                    return v
+                # print "this is the value of v which will be sent"
+                beta = min(beta, v)
+                # print v
+            return v
 
+    def depth_limited_maxValue(self, current_node, alpha, beta,maxDepth):
+        parent_node = copy.deepcopy(current_node)
+        v = -infinity
+        track_of_child_nodes = []
+        for j in range(0, 6, 1):
+            current_state = self.playPiece(j)
+            if current_state != None:
+                # print j
+                track_of_child_nodes.append(self.gameBoard)
+                self.gameBoard = copy.deepcopy(parent_node)
+
+        if track_of_child_nodes == [] or maxDepth == 0:
+            # print "This is the score for maximum"
+            # print self.player1Score
+            # score = self.eval_function(self,self.gameBoard)
+            self.countScore1(self.gameBoard)
+            return self.eval_function(self.gameBoard)
+            #return self.player1Score - self.player2Score
+        else:
+            #max_score_list = []
+            for child in track_of_child_nodes:
+                # print self.pieceCount
+                # print "This is for Max Player"
+                # print child
+                self.gameBoard = copy.deepcopy(child)
+                v = max(v, self.depth_limited_minValue(child, alpha, beta,maxDepth-1))
+                if v >= beta:
+                    return v
+                alpha = max(alpha, v)
+                # print "Value of v from max"
+                # print v
+                # max_score_list.append(v)
+            return v
 
 
 
