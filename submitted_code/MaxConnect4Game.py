@@ -195,7 +195,8 @@ class maxConnect4Game:
         for i in range(0,6,1):
             if i in utility_list:
         	    if utility_list[i] == max_util_value:
-        		    return i
+        	    	utility_list.clear()
+        	    	return i
             #print self.gameBoard
         #return np.argmax(score_list)
 
@@ -264,11 +265,11 @@ class maxConnect4Game:
     def aiPlay(self,depth):
 
         #randColumn = random.randrange(0,7)
-        #Will call the minimax algorithm here
+        #Will call one of the AI algorithms here
         #-----------------------------------------
         start = time.time()
         #randColumn = self.minimax(self.gameBoard)
-        # randColumn = self.alpha_beta_decision(self.gameBoard)
+        #randColumn = self.alpha_beta_decision(self.gameBoard)
         randColumn = self.depth_limited_alpha_beta_pruning(self.gameBoard,depth)
         #print "Time taken to decide after alpha beta is "
         #print time.time() - start
@@ -277,8 +278,7 @@ class maxConnect4Game:
         self.computer_column = randColumn
         result = self.playPiece(randColumn)
         if not result:
-            print "result"
-            #self.aiPlay(depth)
+            print "No Result"
         else:
             #print('\n\nmove %d: Player %d, column %d\n' % (self.pieceCount, self.currentTurn, randColumn+1))
             if self.currentTurn == 1:
@@ -713,7 +713,8 @@ class maxConnect4Game:
         for i in range(0,6,1):
             if i in utility_list:
         	    if utility_list[i] == max_util_value:
-        		    return i
+        	    	utility_list.clear()
+        	    	return i
         # print self.gameBoard
         # return np.argmax(score_list)
 
@@ -786,11 +787,7 @@ class maxConnect4Game:
             return v
     #Depth limited Search
     def depth_limited_alpha_beta_pruning(self, current_node,maxDepth):
-        #print current_node
-        #print "This was current node"
         current_state = copy.deepcopy(current_node)
-        #print current_state
-        #print "this was current state"
         for i in range(0, 7, 1):
             if self.playPiece(i) != None:
                 # print self.gameBoard
@@ -799,24 +796,23 @@ class maxConnect4Game:
                     return i
                     # return np.argmax(score_list)
                 else:
-                    print "this is the child"
-                    print i
+                    # print "this is the child"
+                    # print i
                     # print self.gameBoard
                     # print "first tree"
                     # print self.gameBoard
                     v = self.depth_limited_minValue(self.gameBoard, -infinity, infinity,maxDepth-1)
                     utility_list[i] = v
                     self.gameBoard = copy.deepcopy(current_state)
-        print utility_list
+        #print utility_list
         #return max(utility_list, key=utility_list.get)
         max_util_value =  max([i for i in utility_list.values()])
         #print max_util_value
         for i in range(0,7,1):
             if i in utility_list:
-                if utility_list[i] == max_util_value:
-                    utility_list.clear()
-                    print i
-                    return i
+        	    if utility_list[i] == max_util_value:
+        	    	utility_list.clear()
+        	    	return i
 
         #return max([i for i in utility_list.values()]) 
         # print self.gameBoard
@@ -833,7 +829,7 @@ class maxConnect4Game:
 
         v = infinity
         track_of_child_nodes = []
-        for j in range(0, 6, 1):
+        for j in range(0, 7, 1):
             current_state = self.checkPiece(j, opponent)
             if current_state != None:
                 track_of_child_nodes.append(self.gameBoard)
@@ -862,7 +858,7 @@ class maxConnect4Game:
         parent_node = copy.deepcopy(current_node)
         v = -infinity
         track_of_child_nodes = []
-        for j in range(0, 6, 1):
+        for j in range(0, 7, 1):
             current_state = self.playPiece(j)
             if current_state != None:
                 # print j
